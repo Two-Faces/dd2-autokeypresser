@@ -1,9 +1,9 @@
-name: Build and Release EXE
+name: Build and Upload EXE
 
 on:
   push:
     tags:
-      - 'v*'  # срабатывает при пуше любого тега вида v1.0, v2.3.4 и т.д.
+      - 'v*'
 
 jobs:
   build:
@@ -28,17 +28,8 @@ jobs:
       - name: Build exe with PyInstaller
         run: pyinstaller main.spec
 
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          token: ${{ secrets.GH_PAT }}
-          tag: ${{ github.ref }}
-          name: Release ${{ github.ref_name }}
-          body: "Автоматический релиз, созданный GitHub Actions."
-          artifacts: dist/*.exe
-
-      - name: Upload EXE to Release
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag'
         with:
           files: dist/*.exe
+          token: ${{ secrets.GH_PAT }}
