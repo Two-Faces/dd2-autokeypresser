@@ -26,7 +26,7 @@ jobs:
         shell: pwsh
 
       - name: Build EXE with PyInstaller (.spec)
-        run: pyinstaller --onefile --windowed --icon=app_icon.ico main.py
+        run: pyinstaller main.spec
 
       - name: Upload EXE to GitHub Release
         uses: softprops/action-gh-release@v2
