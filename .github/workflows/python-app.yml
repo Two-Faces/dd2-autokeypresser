@@ -25,7 +25,7 @@ jobs:
         shell: pwsh
 
       - name: Build EXE with PyInstaller (onefile)
-        run: pyinstaller --noconfirm --onefile --windowed --icon=app_icon.ico main.py
+        run: pyinstaller dd2-keypresser.spec
         shell: pwsh
 
       - name: Upload EXE to GitHub Release
