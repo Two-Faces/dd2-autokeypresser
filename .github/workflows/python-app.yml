@@ -3,33 +3,34 @@ name: Build and Upload EXE
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'  # Запускается при пуше тега, например: v1.0.0
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Install dependencies
         run: |
-          pip install pyinstaller
+          pip install pyinstaller psutil
           if (Test-Path "requirements.txt") {
             pip install -r requirements.txt
           }
         shell: pwsh
 
-      - name: Build exe with PyInstaller
-        run: pyinstaller main.spec
+      - name: Build EXE with PyInstaller
+        run: pyinstaller --onefile main.py
 
-      - name: Upload to GitHub Release
+      - name: Upload EXE to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*.exe
+          files: dist/main.exe
           token: ${{ secrets.GH_PAT }}
