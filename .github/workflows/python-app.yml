@@ -3,15 +3,14 @@ name: Build and Upload EXE
 on:
   push:
     tags:
-      - 'v*'  # Запускается при пуше тега, например: v1.0.0
+      - 'v*'
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,8 +25,8 @@ jobs:
           }
         shell: pwsh
 
-      - name: Build EXE with PyInstaller
-        run: pyinstaller --onefile main.py
+      - name: Build EXE with PyInstaller (.spec)
+        run: pyinstaller main.spec
 
       - name: Upload EXE to GitHub Release
         uses: softprops/action-gh-release@v2
