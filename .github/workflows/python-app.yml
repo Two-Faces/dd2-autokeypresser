@@ -29,15 +29,13 @@ jobs:
         run: pyinstaller main.spec
 
       - name: Create GitHub Release
-        id: create_release
         uses: ncipollo/release-action@v1
         with:
+          token: ${{ secrets.GH_PAT }}
           tag: ${{ github.ref }}
           name: Release ${{ github.ref_name }}
           body: "Автоматический релиз, созданный GitHub Actions."
           artifacts: dist/*.exe
-          draft: false
-          prerelease: false
 
       - name: Upload EXE to Release
         uses: softprops/action-gh-release@v2
