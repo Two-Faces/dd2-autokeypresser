@@ -3,14 +3,15 @@ name: Build and Upload EXE
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'  # Сборка только при пуше тега, например v1.0.0
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -19,17 +20,21 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pip install --upgrade pip
           pip install pyinstaller psutil pywin32 keyboard ttkbootstrap pystray pillow
           if (Test-Path "requirements.txt") {
             pip install -r requirements.txt
           }
         shell: pwsh
 
-      - name: Build EXE with PyInstaller (.spec)
-        run: pyinstaller main.spec
+      - name: Build EXE with PyInstaller
+        run: |
+          pyinstaller --onefile --windowed --icon=app_icon.ico main.py
+        shell: pwsh
 
       - name: Upload EXE to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/main.exe
-          token: ${{ secrets.GH_PAT }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
