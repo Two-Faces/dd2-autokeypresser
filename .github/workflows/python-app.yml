@@ -25,7 +25,7 @@ jobs:
         shell: pwsh
 
       - name: Build EXE with PyInstaller
-        run: pyinstaller main.spec
+        run: pyinstaller --clean main.spec
         shell: pwsh
 
       - name: Upload EXE to GitHub Release
