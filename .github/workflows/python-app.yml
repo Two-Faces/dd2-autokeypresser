@@ -1,9 +1,9 @@
-name: Build EXE
+name: Build and Release EXE
 
 on:
   push:
-    branches: [master]
-  pull_request:
+    tags:
+      - 'v*'  # срабатывает при пуше любого тега вида v1.0, v2.3.4 и т.д.
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -28,8 +28,19 @@ jobs:
       - name: Build exe with PyInstaller
         run: pyinstaller main.spec
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        id: create_release
+        uses: ncipollo/release-action@v1
         with:
-          name: dd2-autokeypresser-exe
-          path: dist/*.exe
+          tag: ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
+          body: "Автоматический релиз, созданный GitHub Actions."
+          artifacts: dist/*.exe
+          draft: false
+          prerelease: false
+
+      - name: Upload EXE to Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: dist/*.exe
