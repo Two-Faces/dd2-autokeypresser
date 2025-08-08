@@ -1,0 +1,7 @@
+pyinstaller
+psutil
+pywin32
+keyboard
+ttkbootstrap
+pystray
+pillow
