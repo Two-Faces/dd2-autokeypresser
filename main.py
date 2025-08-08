@@ -165,8 +165,8 @@ class GameKeyPresserApp:
         self.monitor_thread.start()
 
         # Добавляем функциональность трея
-        self.tray_icon = None
-        self.create_tray_icon()
+        #self.tray_icon = None
+        #self.create_tray_icon()
 
     def create_widgets(self):
         # Создаем фрейм для всех элементов интерфейса
@@ -251,7 +251,7 @@ class GameKeyPresserApp:
             target=self.press_key, args=(interval,))
         self.press_thread.start()
 
-        self.toggle_inputs(state=tk.DISABLED)
+        self._toggle_inputs(state=tk.DISABLED)
         self.start_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
         self.root.protocol("WM_DELETE_WINDOW", self.hide_window)
