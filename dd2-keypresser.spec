@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['main.py'],
+    ['dd2-keypresser.py'],
     pathex=[],
     binaries=[],
     datas=[('config.ini', '.'), ('app_icon.ico', '.')],
@@ -22,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='main',
+    name='dd2-keypresser',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
