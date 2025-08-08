@@ -3,7 +3,7 @@ name: Build and Upload EXE
 on:
   push:
     tags:
-      - 'v*'  # Сборка только при пуше тега, например v1.0.0
+      - 'v*'
 
 jobs:
   build:
@@ -24,8 +24,8 @@ jobs:
           pip install -r requirements.txt
         shell: pwsh
 
-      - name: Build EXE with PyInstaller
-        run: pyinstaller --clean main.spec
+      - name: Build EXE with PyInstaller (onefile)
+        run: pyinstaller --noconfirm --onefile --windowed --icon=app_icon.ico main.py
         shell: pwsh
 
       - name: Upload EXE to GitHub Release
