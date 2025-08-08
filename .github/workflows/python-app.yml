@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyinstaller psutil
+          pip install pyinstaller psutil pywin32
           if (Test-Path "requirements.txt") {
             pip install -r requirements.txt
           }
