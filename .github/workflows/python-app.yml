@@ -21,15 +21,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install pyinstaller psutil pywin32 keyboard ttkbootstrap pystray pillow
-          if (Test-Path "requirements.txt") {
-            pip install -r requirements.txt
-          }
+          pip install -r requirements.txt
         shell: pwsh
 
       - name: Build EXE with PyInstaller
-        run: |
-          pyinstaller --onefile --windowed --icon=app_icon.ico main.py
+        run: pyinstaller main.spec
         shell: pwsh
 
       - name: Upload EXE to GitHub Release
