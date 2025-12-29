@@ -30,7 +30,6 @@ run:
 # Build exe file
 build:
 	pyinstaller dd2-keypresser.spec --clean --noconfirm
-	@echo.
 	@echo Build complete! Exe file: dist/dd2-keypresser.exe
 
 # Clean build artifacts
