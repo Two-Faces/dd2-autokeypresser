@@ -19,9 +19,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+        run: make install
         shell: pwsh
 
       - name: Build EXE with PyInstaller (onefile)
