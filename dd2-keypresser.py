@@ -476,8 +476,7 @@ class GameKeyPresserApp(QMainWindow):
         self.stop_event = threading.Event()
         self.is_capturing = False
         self._hotkeys_registered = False
-        self.game_hwnd = None
-        self.overlay = GameOverlay()
+        self.overlays = {}  # Dict of PID -> GameOverlay
 
     def _setup_window(self):
         """Configure main window"""
@@ -649,7 +648,8 @@ class GameKeyPresserApp(QMainWindow):
         """Set the press interval"""
         self.interval_input.setText(str(ms))
         self.press_interval = ms
-        self.overlay.set_status(self.is_pressing, self.key_to_press, ms)
+        for overlay in self.overlays.values():
+            overlay.set_status(self.is_pressing, self.key_to_press, ms)
 
     def _vk_to_display_name(self, vk_code):
         """Get display name for a VK code"""
@@ -702,7 +702,8 @@ class GameKeyPresserApp(QMainWindow):
         except ValueError:
             self.press_interval = 100
 
-        self.overlay.set_status(self.is_pressing, display_name, self.press_interval)
+        for overlay in self.overlays.values():
+            overlay.set_status(self.is_pressing, display_name, self.press_interval)
 
     # -------------------------------------------------------------------------
     # Hotkeys
@@ -849,7 +850,8 @@ class GameKeyPresserApp(QMainWindow):
             self.status_label.setText("Stopped")
             self.status_label.setStyleSheet("color: #8892a0;")
 
-        self.overlay.set_status(active, self.key_to_press, self.press_interval)
+        for overlay in self.overlays.values():
+            overlay.set_status(active, self.key_to_press, self.press_interval)
 
     # -------------------------------------------------------------------------
     # Process Monitoring
@@ -895,52 +897,75 @@ class GameKeyPresserApp(QMainWindow):
 
             if not self.is_pressing:
                 self.start_btn.setEnabled(True)
-            self._update_game_hwnd()
+            self._update_game_hwnds()
         else:
             self.process_list.addItem(f"  Waiting for {GAME_NAME}...")
             self.process_count.setText("Found: 0")
 
             if not self.is_pressing:
                 self.start_btn.setEnabled(False)
-            self.game_hwnd = None
-            self.overlay.set_game_hwnd(None)
+            self._cleanup_all_overlays()
 
-    def _update_game_hwnd(self):
-        """Find game window handle and update overlay"""
+    def _cleanup_all_overlays(self):
+        """Close and remove all overlays"""
+        for overlay in self.overlays.values():
+            overlay.close()
+        self.overlays.clear()
+
+    def _update_game_hwnds(self):
+        """Find game window handles for all processes and update overlays"""
         if not self.selected_processes:
-            self.game_hwnd = None
-            self.overlay.set_game_hwnd(None)
+            self._cleanup_all_overlays()
             return
 
-        for pid in self.selected_processes.keys():
-            result = []
+        current_pids = set(self.selected_processes.keys())
+        existing_pids = set(self.overlays.keys())
 
-            def enum_callback(hwnd, result):
-                try:
-                    if win32gui.IsWindow(hwnd) and win32gui.IsWindowVisible(hwnd):
-                        _, window_pid = win32process.GetWindowThreadProcessId(hwnd)
-                        if window_pid == pid and win32gui.GetWindowText(hwnd):
-                            result.append(hwnd)
-                except Exception:
-                    pass
-                return True
+        # Remove overlays for processes that no longer exist
+        for pid in existing_pids - current_pids:
+            if pid in self.overlays:
+                self.overlays[pid].close()
+                del self.overlays[pid]
 
+        # Create/update overlays for each process
+        for pid in current_pids:
+            hwnd = self._find_window_for_pid(pid)
+            if hwnd:
+                # Create overlay if doesn't exist
+                if pid not in self.overlays:
+                    self.overlays[pid] = GameOverlay()
+
+                self.overlays[pid].set_game_hwnd(hwnd)
+                self.overlays[pid].set_status(
+                    self.is_pressing,
+                    self.key_to_press,
+                    self.press_interval
+                )
+            else:
+                # No window found - remove overlay if exists
+                if pid in self.overlays:
+                    self.overlays[pid].close()
+                    del self.overlays[pid]
+
+    def _find_window_for_pid(self, pid):
+        """Find the main window handle for a given process ID"""
+        result = []
+
+        def enum_callback(hwnd, result):
             try:
-                win32gui.EnumWindows(enum_callback, result)
-                if result:
-                    self.game_hwnd = result[0]
-                    self.overlay.set_game_hwnd(self.game_hwnd)
-                    self.overlay.set_status(
-                        self.is_pressing,
-                        self.key_to_press,
-                        self.press_interval
-                    )
-                    return
+                if win32gui.IsWindow(hwnd) and win32gui.IsWindowVisible(hwnd):
+                    _, window_pid = win32process.GetWindowThreadProcessId(hwnd)
+                    if window_pid == pid and win32gui.GetWindowText(hwnd):
+                        result.append(hwnd)
             except Exception:
                 pass
+            return True
 
-        self.game_hwnd = None
-        self.overlay.set_game_hwnd(None)
+        try:
+            win32gui.EnumWindows(enum_callback, result)
+            return result[0] if result else None
+        except Exception:
+            return None
 
     # -------------------------------------------------------------------------
     # System Tray
@@ -988,8 +1013,7 @@ class GameKeyPresserApp(QMainWindow):
         """Exit application"""
         self.stop_event.set()
 
-        if hasattr(self, 'overlay') and self.overlay:
-            self.overlay.close()
+        self._cleanup_all_overlays()
 
         if hasattr(self, 'tray_icon') and self.tray_icon:
             try:
