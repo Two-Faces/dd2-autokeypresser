@@ -3,6 +3,9 @@ __pycache__
 .py[codz]
 $py.class
 
+.idea
+.claude
+*.log
 # C extensions
 .so
 

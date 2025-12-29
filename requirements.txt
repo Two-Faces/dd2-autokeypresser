@@ -1,7 +1,5 @@
-pyinstaller
+PyQt5
 psutil
 pywin32
-keyboard
-ttkbootstrap
 pystray
 pillow
