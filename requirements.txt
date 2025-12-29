@@ -3,3 +3,4 @@ psutil
 pywin32
 pystray
 pillow
+pyinstaller
